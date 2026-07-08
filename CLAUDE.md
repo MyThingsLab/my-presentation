@@ -4,7 +4,7 @@ You are developing **my-presentation**, a MyThingsLab My[X] tool.
 
 **Inherited rules:** obey [`./HARNESS.md`](./HARNESS.md) in full — the vendored
 MyThingsLab build-harness rules. Do not restate or override them. Anything not
-covered here defers to `HARNESS.md`, then `mythings-core/docs/CONVENTIONS.md`.
+covered here defers to `HARNESS.md`, then `my-things-core/docs/CONVENTIONS.md`.
 
 ## This tool
 
@@ -28,7 +28,7 @@ covered here defers to `HARNESS.md`, then `mythings-core/docs/CONVENTIONS.md`.
     `mytypster`; it shells out to the installed `mytypster` CLI
     (`mytypster draft --kind presentation --from-json ... --json`) for the
     actual render-and-compile step. This keeps the two tool repos decoupled
-    at the code level — only `mythings-core` is a shared dependency.
+    at the code level — only `my-things-core` is a shared dependency.
   - One side effect of its own: an issue comment rendering the full outline
     (title/bullets/speaker notes per slide), posted **regardless** of
     whether the deck compiles — the narrative review doesn't depend on

@@ -26,12 +26,12 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      # mythings-core and my-guard are sibling repos, not on PyPI — pull from the same owner.
+      # my-things-core and my-guard are sibling repos, not on PyPI — pull from the same owner.
       # No mytypster install here: tests mock the `mytypster` subprocess boundary, by design
       # (CLI hand-off keeps the two tool repos decoupled at the code level).
       - name: Install siblings
         run: |
-          pip install "mythings-core @ git+https://github.com/${{ github.repository_owner }}/mythings-core@main"
+          pip install "my-things-core @ git+https://github.com/${{ github.repository_owner }}/my-things-core@main"
           pip install "my-guard @ git+https://github.com/${{ github.repository_owner }}/my-guard@main"
       - name: Install
         run: pip install -e ".[dev]"

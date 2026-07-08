@@ -5,7 +5,7 @@
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![MIT](https://img.shields.io/badge/license-MIT-green)
 
-A [MyThingsLab](../mythings-core) `My[X]` tool: given a talk-request issue
+A [MyThingsLab](../my-things-core) `My[X]` tool: given a talk-request issue
 (topic, audience, target length), drafts a slide-by-slide outline with speaker
 notes, then hands that structure to **MyTypster** to render an actual slide deck
 (a Typst slide package via a `templates/presentation.typ` anchor) and compile it
@@ -35,7 +35,7 @@ compile gate are deterministic and delegated to MyTypster.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ../mythings-core -e ".[dev]"
+pip install -e ../my-things-core -e ".[dev]"
 pytest
 ```
 
