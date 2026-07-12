@@ -2,58 +2,32 @@ from __future__ import annotations
 
 import json
 
-from mythings.engine import EngineRequest, EngineResult
+# Shared fakes come from mythings.testing; only the issue payload wiring and
+# the mytypster CLI double stay local.
+from mythings.testing import FakeGh, ScriptedEngine
+
+__all__ = ["ScriptedEngine"]
 
 
-class ScriptedEngine:
-    def __init__(self, reply: str) -> None:
-        self.reply = reply
-        self.calls: list[EngineRequest] = []
-
-    def run(self, request: EngineRequest) -> EngineResult:
-        self.calls.append(request)
-        return EngineResult(text=self.reply)
-
-
-class SpyEngine:
-    def __init__(self) -> None:
-        self.calls: list[EngineRequest] = []
-
-    def run(self, request: EngineRequest) -> EngineResult:
-        self.calls.append(request)
-        return EngineResult(text="")
-
-
-class FakeGh:
-    # Mocks only the `gh` subprocess boundary.
-    def __init__(
-        self,
-        *,
-        number: int = 5,
-        title: str = "Talk on Kernel Methods",
-        body: str = "Audience: ML engineers. Explain kernel methods for SVMs.",
-        labels: list[str] | None = None,
-    ) -> None:
-        self.calls: list[list[str]] = []
-        self.number = number
-        self.title = title
-        self.body = body
-        self.labels = labels or []
-
-    def __call__(self, argv: list[str]) -> str:
-        self.calls.append(argv)
-        if argv[:2] == ["issue", "view"]:
-            return json.dumps(
-                {
-                    "number": self.number,
-                    "title": self.title,
-                    "body": self.body,
-                    "labels": [{"name": lbl} for lbl in self.labels],
-                }
-            )
-        if argv[:2] == ["issue", "comment"]:
-            return "https://github.com/owner/target/issues/5#issuecomment-1\n"
-        raise AssertionError(f"unexpected gh call: {argv}")
+def fake_gh(
+    *,
+    number: int = 5,
+    title: str = "Talk on Kernel Methods",
+    body: str = "Audience: ML engineers. Explain kernel methods for SVMs.",
+    labels: list[str] | None = None,
+) -> FakeGh:
+    issue = {
+        "number": number,
+        "title": title,
+        "body": body,
+        "labels": [{"name": lbl} for lbl in (labels or [])],
+    }
+    return FakeGh(
+        {
+            ("issue", "view"): json.dumps(issue),
+            ("issue", "comment"): "https://github.com/owner/target/issues/5#issuecomment-1\n",
+        }
+    )
 
 
 class FakeTypster:
