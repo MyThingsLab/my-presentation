@@ -1,0 +1,1 @@
+{"data":{"files":"tests/","session":"2026-07-12"},"detail":"Mechanical migration to mythings.testing: shared ScriptedEngine/FakeGh replace local copies; FakeTypster (mytypster CLI boundary) stays local.","kind":"build","outcome":"success","tool":"claude-code","ts":"2026-07-12T10:14:56Z"}

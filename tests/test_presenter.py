@@ -5,7 +5,7 @@ from pathlib import Path
 
 from mythings.ledger import Ledger
 
-from conftest import FakeGh, FakeTypster, ScriptedEngine, SpyEngine
+from conftest import FakeTypster, ScriptedEngine, fake_gh
 from mypresentation.presenter import Presenter
 
 _OUTLINE_REPLY = json.dumps(
@@ -20,14 +20,14 @@ _OUTLINE_REPLY = json.dumps(
 )
 
 
-def _presenter(tmp_path: Path, gh: FakeGh, typster: FakeTypster, **kw) -> tuple[Presenter, Ledger]:
+def _presenter(tmp_path: Path, gh: fake_gh, typster: FakeTypster, **kw) -> tuple[Presenter, Ledger]:
     ledger = Ledger(tmp_path / "ledger.jsonl")
     p = Presenter(repo="owner/target", ledger=ledger, runner=gh, mytypster_runner=typster, **kw)
     return p, ledger
 
 
 def test_draft_happy_path_comments_outline_and_opens_pr(tmp_path: Path) -> None:
-    gh = FakeGh()
+    gh = fake_gh()
     typster = FakeTypster(outcome="success", pr=9)
     p, ledger = _presenter(tmp_path, gh, typster, engine=ScriptedEngine(_OUTLINE_REPLY))
 
@@ -55,7 +55,7 @@ def test_draft_happy_path_comments_outline_and_opens_pr(tmp_path: Path) -> None:
 
 
 def test_draft_truncates_to_target_slides_deterministically(tmp_path: Path) -> None:
-    gh = FakeGh()
+    gh = fake_gh()
     typster = FakeTypster()
     p, ledger = _presenter(tmp_path, gh, typster, engine=ScriptedEngine(_OUTLINE_REPLY))
 
@@ -73,7 +73,7 @@ def test_draft_truncates_to_target_slides_deterministically(tmp_path: Path) -> N
 
 
 def test_draft_target_slides_parsed_from_issue_body(tmp_path: Path) -> None:
-    gh = FakeGh(body="Please keep this to 1 slides total.")
+    gh = fake_gh(body="Please keep this to 1 slides total.")
     typster = FakeTypster()
     p, ledger = _presenter(tmp_path, gh, typster, engine=ScriptedEngine(_OUTLINE_REPLY))
 
@@ -83,7 +83,7 @@ def test_draft_target_slides_parsed_from_issue_body(tmp_path: Path) -> None:
 
 
 def test_draft_compile_failure_still_comments_outline_but_no_pr(tmp_path: Path) -> None:
-    gh = FakeGh()
+    gh = fake_gh()
     typster = FakeTypster(outcome="compile_failed", pr=None)
     p, ledger = _presenter(tmp_path, gh, typster, engine=ScriptedEngine(_OUTLINE_REPLY))
 
@@ -97,7 +97,7 @@ def test_draft_compile_failure_still_comments_outline_but_no_pr(tmp_path: Path) 
 
 
 def test_draft_no_pr_passed_through_to_typster(tmp_path: Path) -> None:
-    gh = FakeGh()
+    gh = fake_gh()
     typster = FakeTypster()
     p, _ = _presenter(tmp_path, gh, typster, engine=ScriptedEngine(_OUTLINE_REPLY))
 
@@ -107,7 +107,7 @@ def test_draft_no_pr_passed_through_to_typster(tmp_path: Path) -> None:
 
 
 def test_draft_against_noop_engine_degrades_to_one_stub_slide(tmp_path: Path) -> None:
-    gh = FakeGh(title="Quick talk on RayTracer", body="Line one.\nLine two.")
+    gh = fake_gh(title="Quick talk on RayTracer", body="Line one.\nLine two.")
     typster = FakeTypster()
     p, ledger = _presenter(tmp_path, gh, typster)  # default NoopEngine
 
@@ -125,7 +125,7 @@ def test_draft_engine_never_called_when_issue_fetch_fails(tmp_path: Path) -> Non
             raise RuntimeError("gh issue view failed (404): not found")
 
     typster = FakeTypster()
-    spy = SpyEngine()
+    spy = ScriptedEngine()
     ledger = Ledger(tmp_path / "ledger.jsonl")
     p = Presenter(
         repo="owner/target",
