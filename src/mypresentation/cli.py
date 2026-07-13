@@ -57,6 +57,11 @@ def main(argv: list[str] | None = None) -> int:
     draft.add_argument(
         "--slides", type=int, help="target slide count (default: inferred from body)"
     )
+    draft.add_argument(
+        "--images",
+        help="comma-separated repo-relative image paths the outline may reference "
+        "(default: inferred from an 'images:' line in the body)",
+    )
     draft.add_argument("--no-pr", action="store_true", help="skip opening the compiled-deck PR")
     draft.add_argument(
         "--engine",
@@ -69,7 +74,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     presenter = _make(args)
 
-    result = presenter.draft(args.issue, target_slides=args.slides, no_pr=args.no_pr)
+    images = [p.strip() for p in args.images.split(",") if p.strip()] if args.images else None
+    result = presenter.draft(
+        args.issue, target_slides=args.slides, images=images, no_pr=args.no_pr
+    )
 
     print(_render(result))
     return 1 if result.outcome in {"failure", "compile_failed"} else 0
