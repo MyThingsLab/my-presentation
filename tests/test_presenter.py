@@ -119,6 +119,56 @@ def test_draft_against_noop_engine_degrades_to_one_stub_slide(tmp_path: Path) ->
     assert "Line one." in comment_call[-1]
 
 
+def test_draft_threads_images_and_drops_unlisted_paths(tmp_path: Path) -> None:
+    reply = json.dumps(
+        {
+            "slides": [
+                {
+                    "title": "Results",
+                    "bullets": ["see the plot"],
+                    "speaker_notes": "",
+                    "images": ["plots/real.png", "plots/invented.png"],
+                }
+            ],
+            "est_duration_min": 5,
+        }
+    )
+    gh = fake_gh()
+    typster = FakeTypster()
+    p, _ = _presenter(tmp_path, gh, typster, engine=ScriptedEngine(reply))
+
+    result = p.draft(issue=5, images=["plots/real.png"])
+
+    assert result.outcome == "success"
+    slides_path = Path(typster.calls[0][typster.calls[0].index("--from-json") + 1])
+    payload = json.loads(slides_path.read_text())
+    assert payload["slides"][0]["images"] == ["plots/real.png"]  # invented path dropped
+
+    comment_call = next(c for c in gh.calls if c[:2] == ["issue", "comment"])
+    assert "![](plots/real.png)" in comment_call[-1]
+    assert "invented.png" not in comment_call[-1]
+
+
+def test_draft_images_parsed_from_issue_body(tmp_path: Path) -> None:
+    reply = json.dumps(
+        {
+            "slides": [
+                {"title": "Results", "bullets": ["x"], "speaker_notes": "", "images": ["a.png"]}
+            ],
+            "est_duration_min": 5,
+        }
+    )
+    gh = fake_gh(body="Talk about results.\nimages: a.png, b.png")
+    typster = FakeTypster()
+    p, _ = _presenter(tmp_path, gh, typster, engine=ScriptedEngine(reply))
+
+    p.draft(issue=5)
+
+    slides_path = Path(typster.calls[0][typster.calls[0].index("--from-json") + 1])
+    payload = json.loads(slides_path.read_text())
+    assert payload["slides"][0]["images"] == ["a.png"]
+
+
 def test_draft_engine_never_called_when_issue_fetch_fails(tmp_path: Path) -> None:
     class BrokenGh:
         def __call__(self, argv: list[str]) -> str:
